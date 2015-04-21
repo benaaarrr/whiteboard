@@ -1,0 +1,80 @@
+<html>
+<head>
+<title>Ben's Whiteboard</title>
+
+<style type="text/css">
+
+body {
+  margin:0;
+  padding:0;
+  font-family: sans-serif;
+}
+
+.card {
+  width: 200px;
+  height: 100px;
+  background-color: yellow;
+  border:1px solid black;
+  color:black;
+  font-size:0.7em;
+  padding:10px;
+  overflow:auto;
+}
+
+#board {
+  width: 8000px;
+  height:6000px;
+}
+
+.new {
+  position: absolute;
+  top:0;
+  left:0;
+}
+</style>
+
+</head>
+
+<body>
+<div id="board">
+
+</div>
+
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/jquery-ui.js"></script>
+<script type="text/javascript">
+
+$('#board').on('dblclick', function(event){
+  var $card = $('<div class="card new" contenteditable="true"></div>');
+  $(this).prepend($card);
+  $card.draggable({grid:[25,25]});
+  var x =  (25 * Math.round(event.pageX / 25)) - 50;
+  var y = (25 * Math.round(event.pageY / 25)); - 100;
+  $card.css({'top':y, 'left':x});
+});
+
+
+$('.card').on('dragstop', function(event, ui){
+
+//trigger save
+
+//update minimap
+
+});
+
+function save()
+{
+  var cards = $('#board').html();
+  localStorage.setItem('cardData', cards);
+}
+function load()
+{
+  var cards = localStorage.getItem('cardData');
+  $('#board').html(cards);
+}
+
+</script>
+
+</body>
+
+</html>
