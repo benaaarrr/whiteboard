@@ -2,6 +2,7 @@
 <head>
 <title>Ben's Whiteboard</title>
 
+    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/black-tie/jquery-ui.min.css" rel="stylesheet" />
 <style type="text/css">
 
 body {
@@ -31,6 +32,18 @@ body {
   top:0;
   left:0;
 }
+#wait {
+    font-size:5em;
+    background-color:#000;
+    color:#fff;   
+    text-align:center;    
+    padding:50px;
+}
+#panel {
+    position:fixed;
+    top:0;
+    left:0;
+    }
 </style>
 
 </head>
@@ -40,39 +53,75 @@ body {
 
 </div>
 
+    <div id="panel">
+        <fieldset>
+            <label>Controls</label>
+        <button style="display:none" id="butSave">Save</button>
+        <button id="butLoad">Load</button>
+        </fieldset>
+        
+
+    </div>
+
+<div id="wait">Loading/Saving... Wait...</div>
+   
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/jquery-ui.js"></script>
 <script type="text/javascript">
 
-$('#board').on('dblclick', function(event){
-  var $card = $('<div class="card new" contenteditable="true"></div>');
-  $(this).prepend($card);
-  $card.draggable({grid:[25,25]});
-  var x =  (25 * Math.round(event.pageX / 25)) - 50;
-  var y = (25 * Math.round(event.pageY / 25)); - 100;
-  $card.css({'top':y, 'left':x});
+    window.onbeforeunload = function (e) {
+        return "Are you sure?";
+    };
+
+    var $modal = $("#wait").dialog({
+        modal: true,
+        autoOpen: false,
+        closeOnEscape: false,
+        width:900
+    });
+
+    $('#board').on('dblclick', function(event){
+        var $card = $('<div class="card new" contenteditable="true"></div>');
+        $(this).prepend($card);        
+        $card.draggable({grid:[25,25]});
+        var x =  (25 * Math.round(event.pageX / 25)) - 50;
+        var y = (25 * Math.round(event.pageY / 25)); - 100;
+        $card.css({'top':y, 'left':x});
 });
 
+
+$('#butSave').click(function () {
+    save();
+});
+$('#butLoad').click(function () {
+    load();
+    $(this).hide();
+    $('#butSave').show();
+});
 
 $('.card').on('dragstop', function(event, ui){
-
-//trigger save
-
-//update minimap
-
+    //update minimap
 });
+
 
 function save()
 {
+  $modal.dialog('open');
   var cards = $('#board').html();
-  localStorage.setItem('cardData', cards);
+  $.post('/Cards/Save', { cardHtml: cards }, function () {      
+      $modal.dialog('close');
+  });  
 }
 function load()
 {
-  var cards = localStorage.getItem('cardData');
-  $('#board').html(cards);
+    $modal.dialog('open');
+    $.getJSON('/Cards/Load', {}, function(data){        
+        $('#board').html(data.Html);
+        $('.card').draggable({ grid: [25, 25] });
+        $modal.dialog('close');
+    });  
 }
-
+    
 </script>
 
 </body>
