@@ -3,7 +3,7 @@ namespace wb.Migrations
     using System;
     using System.Data.Entity.Migrations;
     
-    public partial class InitalCreate : DbMigration
+    public partial class InitialCreate : DbMigration
     {
         public override void Up()
         {
@@ -12,7 +12,9 @@ namespace wb.Migrations
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
-                        Html = c.String(maxLength: 4000),
+                        Content = c.String(maxLength: 4000),
+                        X_Position = c.Int(nullable: false),
+                        Y_Position = c.Int(nullable: false),
                         CreatedOn = c.DateTime(nullable: false),
                     })
                 .PrimaryKey(t => t.Id);

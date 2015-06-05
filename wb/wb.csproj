@@ -161,9 +161,9 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201504221224415_InitalCreate.cs" />
-    <Compile Include="Migrations\201504221224415_InitalCreate.Designer.cs">
-      <DependentUpon>201504221224415_InitalCreate.cs</DependentUpon>
+    <Compile Include="Migrations\201504291515484_InitialCreate.cs" />
+    <Compile Include="Migrations\201504291515484_InitialCreate.Designer.cs">
+      <DependentUpon>201504291515484_InitialCreate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Card.cs" />
@@ -175,8 +175,8 @@
     <Folder Include="Views\Cards\" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201504221224415_InitalCreate.resx">
-      <DependentUpon>201504221224415_InitalCreate.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201504291515484_InitialCreate.resx">
+      <DependentUpon>201504291515484_InitialCreate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
