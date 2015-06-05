@@ -15,33 +15,36 @@ namespace wb.Controllers
         private CardContext db = new CardContext();
 
         // GET: Cards
+
+        public JsonResult NewCard()
+        {
+            var newCard = db.Cards.Add(new Card() { CreatedOn = DateTime.Now });
+            db.SaveChanges();
+
+            return Json(newCard, JsonRequestBehavior.AllowGet);
+        }
         
         public JsonResult Load()
-        {            
-            var card = db.Cards.Take(1).OrderByDescending(c => c.CreatedOn).Single();
-            return Json(card, JsonRequestBehavior.AllowGet);
+        {
+            var cards = db.Cards.ToList();
+            return Json(cards, JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]
         [ValidateInput(false)]
-        public JsonResult Save(string cardHtml)
+        public JsonResult Save(List<Card> cards)
         {
-            var success = false;
-            try
+            foreach(var card in cards)
             {
-                if (cardHtml.Length > 0)
-                {
-                    db.Cards.Add(new Card() { CreatedOn = DateTime.Now, Html = cardHtml });
-                    db.SaveChanges();
-                }
-                success = true;
+                var c = db.Cards.Find(card.Id);
+                c.Content = card.Content;
+                c.X_Position = card.X_Position;
+                c.Y_Position = card.Y_Position;
             }
-            catch(Exception ex)
-            {
-                success = false;
-            }
+
+            db.SaveChanges();
             
-            return Json(new {result = success});
+            return Json(new {result = true});
         }
     }
 }

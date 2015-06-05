@@ -8,7 +8,11 @@ namespace wb.Models
     public class Card
     {
         public int Id { get; set; }
-        public string Html{ get; set; }
+
+        public string Content { get; set; }
+        public int X_Position { get; set; }
+        public int Y_Position { get; set; }
+        
         public DateTime CreatedOn { get; set; }
     }
 }

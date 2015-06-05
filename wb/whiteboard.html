@@ -2,19 +2,20 @@
 <head>
 <title>Ben's Whiteboard</title>
 
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/black-tie/jquery-ui.min.css" rel="stylesheet" />
 <style type="text/css">
 
 body {
   margin:0;
   padding:0;
-  font-family: sans-serif;
+  font-family: 'Open Sans', sans-serif;
 }
 
 .card {
   width: 200px;
   height: 100px;
-  background-color: yellow;
+  background-color: #FFFC74;
   border:1px solid black;
   color:black;
   font-size:0.7em;
@@ -44,6 +45,11 @@ body {
     top:0;
     left:0;
     }
+.ui-dialog {
+    position:fixed !important;
+    top:0 !important;
+    left:0 !important;
+}
 </style>
 
 </head>
@@ -59,11 +65,10 @@ body {
         <button style="display:none" id="butSave">Save</button>
         <button id="butLoad">Load</button>
         </fieldset>
-        
-
     </div>
+    <div id="wait">Loading/Saving... Wait...</div>
 
-<div id="wait">Loading/Saving... Wait...</div>
+
    
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/jquery-ui.js"></script>
@@ -72,7 +77,7 @@ body {
     window.onbeforeunload = function (e) {
         return "Are you sure?";
     };
-
+    
     var $modal = $("#wait").dialog({
         modal: true,
         autoOpen: false,
@@ -81,14 +86,24 @@ body {
     });
 
     $('#board').on('dblclick', function(event){
-        var $card = $('<div class="card new" contenteditable="true"></div>');
-        $(this).prepend($card);        
-        $card.draggable({grid:[25,25]});
-        var x =  (25 * Math.round(event.pageX / 25)) - 50;
-        var y = (25 * Math.round(event.pageY / 25)); - 100;
-        $card.css({'top':y, 'left':x});
-});
 
+        $.getJSON('/Cards/NewCard', {}, function (newCard) {            
+            draw(newCard, event.pageX, event.pageY);
+        });
+    });
+
+    function draw(card, pageX, pageY)
+    {   
+        var $card = $('<div class="card new" data-card-id="'+card.Id+'" contenteditable="true">'+card.Content+'</div>');
+        $('#board').prepend($card);        
+        $card.draggable({ grid: [25, 25] });          
+        var x =  (25 * Math.round(pageX / 25)) - 50;
+        var y = (25 * Math.round(pageY / 25)); -100;
+        if (card.X_Position > 0) x = card.X_Position;
+        if (card.Y_Position > 0) y = card.Y_Position;
+
+        $card.css({ 'top': y, 'left': x });
+    }
 
 $('#butSave').click(function () {
     save();
@@ -103,21 +118,57 @@ $('.card').on('dragstop', function(event, ui){
     //update minimap
 });
 
+var ctrlDown = false;
+$(document).keydown(function (event) {
+    if (event.which == 17) {
+        ctrlDown = true;
+    }
+});
+$(document).keyup(function (event) {
+    if (event.which == 17) {
+        ctrlDown = false;
+    }
+});
+
+var colours = ['#FFFC74', '#ffab48', '#9aff74'];
+$("#board").on('click', '.card', function (event) {
+    if(ctrlDown)
+    {
+        console.log($(this).css('background-color'));
+        var i = colours.indexOf($(this).css('background-color'));
+        if(i == colours.length-1) i = 0; 
+        $(this).css({ 'background-color': colours[i] });
+    }
+});
 
 function save()
 {
-  $modal.dialog('open');
-  var cards = $('#board').html();
-  $.post('/Cards/Save', { cardHtml: cards }, function () {      
+    $modal.dialog('open');
+    var cards = [];
+    $('.card').each(function () {
+        var $c = $(this);
+        cards.push({
+            Id: $c.attr('data-card-id'),
+            Content: $c.html(),
+            X_Position: $c.css('left').replace('px',''),
+            Y_Position: $c.css('top').replace('px', '')
+        });
+    });
+    
+  $.post('/Cards/Save', { 'cards' : cards }, function () {      
       $modal.dialog('close');
   });  
 }
 function load()
 {
     $modal.dialog('open');
-    $.getJSON('/Cards/Load', {}, function(data){        
-        $('#board').html(data.Html);
-        $('.card').draggable({ grid: [25, 25] });
+    $.getJSON('/Cards/Load', {}, function(cards){        
+        
+        for (i = 0; i < cards.length; i++)
+        {
+            draw(cards[i]);
+        }
+        
         $modal.dialog('close');
     });  
 }
