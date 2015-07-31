@@ -15,19 +15,28 @@ namespace wb.Controllers
         private CardContext db = new CardContext();
 
         // GET: Cards
-
-        public JsonResult NewCard()
+        public ActionResult Index()
         {
-            var newCard = db.Cards.Add(new Card() { CreatedOn = DateTime.Now });
+            var boards = db.Boards.ToList();
+            return View(boards);
+        }
+
+        public JsonResult NewCard(int id)
+        {
+            var board = db.Boards.Single(b => b.Id == id);
+            var newCard = db.Cards.Add(new Card() { CreatedOn = DateTime.Now, Board = board });
             db.SaveChanges();
 
-            return Json(newCard, JsonRequestBehavior.AllowGet);
+            return Json(newCard.ToDto(), JsonRequestBehavior.AllowGet);
         }
         
-        public JsonResult Load()
+        public JsonResult Load(int id)
         {
-            var cards = db.Cards.ToList();
-            return Json(cards, JsonRequestBehavior.AllowGet);
+            var cards = db.Boards.Single(x=>x.Id == id).Cards.ToList();
+            
+            var c = cards.Select(x=> x.ToDto());
+            
+            return Json(c, JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]

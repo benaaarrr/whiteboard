@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web;
+using wb.ViewModels;
 
 namespace wb.Models
 {
@@ -19,7 +20,8 @@ namespace wb.Models
         {
         }
 
-        public System.Data.Entity.DbSet<wb.Models.Card> Cards { get; set; }
+        public DbSet<Card> Cards { get; set; }
+        public DbSet<Board> Boards { get; set; }
     
     }
 }

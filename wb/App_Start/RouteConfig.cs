@@ -13,11 +13,10 @@ namespace wb
         {
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
-
             routes.MapRoute(
                 name: "Default",
-                url: "{controller}/{action}",
-                defaults: new { controller = "Card", action = "Index", id = UrlParameter.Optional }
+                url: "{controller}/{action}/{id}",
+                defaults: new { controller = "Boards", action = "Index", id = UrlParameter.Optional }
             );
         }
     }

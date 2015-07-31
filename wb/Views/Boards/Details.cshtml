@@ -1,0 +1,176 @@
+﻿@model wb.ViewModels.Board
+
+@{
+    ViewBag.Title = "Details";
+}
+
+
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/black-tie/jquery-ui.min.css" rel="stylesheet" />
+<style type="text/css">
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    .card {
+        width: 200px;
+        height: 100px;
+        background-color: #FFFC74;
+        border: 1px solid black;
+        color: black;
+        font-size: 0.7em;
+        padding: 10px;                
+    }
+
+    #board {
+        width: 8000px;
+        height: 6000px;
+    }
+
+    .new {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    #wait {
+        font-size: 5em;
+        background-color: #000;
+        color: #fff;
+        text-align: center;
+        padding: 50px;
+    }
+
+    #panel {
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+
+    .ui-dialog {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+    }
+</style>
+
+
+<div id="board">
+    
+</div>
+
+<div id="panel">    
+    Board: <b>@Model.Name</b>
+    <br/>
+    Controls: <a href="/Boards">View Boards</a> | <a href="#" id="butSave">Save Board</a>         
+</div>
+<div id="wait">Loading/Saving... Wait...</div>
+
+
+
+
+<script type="text/javascript">
+
+    window.onbeforeunload = function (e) {
+        return "Are you sure?";
+    };
+
+    var $modal = $("#wait").dialog({
+        modal: true,
+        autoOpen: false,
+        closeOnEscape: false,
+        width:900
+    });
+
+    $('#board').on('dblclick', function(event){
+
+        $.getJSON('/Cards/NewCard', {'id':@Model.Id}, function (newCard) {
+            draw(newCard, event.pageX, event.pageY);
+        });
+    });
+
+    function draw(card, pageX, pageY)
+    {
+        var $card = $('<div class="card new" data-card-id="'+card.Id+'" contenteditable="true">'+card.Content+'</div>');
+        $('#board').prepend($card);
+        
+        //$card.resizable({ grid: [25, 25], autoHide: true });
+        $card.draggable({ grid: [25, 25] });
+
+        var x =  (25 * Math.round(pageX / 25)) - 50;
+        var y = (25 * Math.round(pageY / 25)); -100;
+        if (card.X_Position > 0) x = card.X_Position;
+        if (card.Y_Position > 0) y = card.Y_Position;
+
+        $card.css({ 'top': y, 'left': x });
+    }
+
+    $('#butSave').click(function () {
+        save();
+    });
+
+    $('.card').on('dragstop', function(event, ui){
+        //update minimap
+    });
+
+    var ctrlDown = false;
+    $(document).keydown(function (event) {
+        if (event.which == 17) {
+            ctrlDown = true;
+        }
+    });
+    $(document).keyup(function (event) {
+        if (event.which == 17) {
+            ctrlDown = false;
+        }
+    });
+
+    var colours = ['#FFFC74', '#ffab48', '#9aff74'];
+    $("#board").on('click', '.card', function (event) {
+        if(ctrlDown)
+        {
+            console.log($(this).css('background-color'));
+            var i = colours.indexOf($(this).css('background-color'));
+            if(i == colours.length-1) i = 0;
+            $(this).css({ 'background-color': colours[i] });
+        }
+    });
+
+    function save()
+    {
+        $modal.dialog('open');
+        var cards = [];
+        $('.card').each(function () {
+            var $c = $(this);
+            cards.push({
+                Id: $c.attr('data-card-id'),
+                Content: $c.html(),
+                X_Position: $c.css('left').replace('px',''),
+                Y_Position: $c.css('top').replace('px', '')
+            });
+        });
+
+        $.post('/Cards/Save', { 'cards' : cards }, function () {
+            $modal.dialog('close');
+            alert('Saved!');
+        });
+    }
+    function load()
+    {
+        $modal.dialog('open');
+        $.getJSON('/Cards/Load', {'id':@Model.Id}, function(cards){
+
+            for (i = 0; i < cards.length; i++)
+            {
+                draw(cards[i]);
+            }
+
+            $modal.dialog('close');
+        });
+    }
+
+    load();
+
+</script>
